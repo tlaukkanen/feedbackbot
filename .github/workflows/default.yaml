@@ -1,0 +1,35 @@
+name: Main build & deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy_job:
+    runs-on: ubuntu-latest
+    name: Build and Deploy
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET 6.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0
+      - name: Build and publish
+        sh: dotnet publish -c Release -o ./publish
+
+      # Deploy Bicep file
+      - name: Create Azure resources
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          template: ./azure.bicep
+
+      # Deploy Bot Web App to Azure
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: app-feedbackbot-dev
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish

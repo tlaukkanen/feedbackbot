@@ -11,12 +11,16 @@ jobs:
     name: Build and Deploy
     steps:
       - uses: actions/checkout@v2
+
+      # Setup .NET
       - name: Setup .NET 6.0
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0
+      
+      # Build the project
       - name: Build and publish
-        sh: dotnet publish -c Release -o ./publish
+        run: dotnet publish -c Release -o ./publish
 
       # Deploy Bicep file
       - name: Create Azure resources
